@@ -1,0 +1,83 @@
+/* General container styles */
+.auth-container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    
+/* Title (Sign Up / Log In) */
+.auth-title {
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 24px;
+    color: #333;
+    
+}
+
+/* Google sign-in button (below header) */
+.google-btn {
+    width: 100%;
+    padding: 10px;
+    background-color: #db4437;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.google-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Input fields */
+.auth-input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+/* Submit button */
+.auth-submit {
+    width: 100%;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.auth-submit:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Error message */
+.auth-error {
+    color: red;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+/* Toggle between Sign Up / Log In */
+.auth-toggle {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.auth-toggle-link {
+    color: #007bff;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+}

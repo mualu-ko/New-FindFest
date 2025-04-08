@@ -1,0 +1,112 @@
+/* RSVP Button */
+.rsvp-btn {
+    background-color: #007bff;
+    color: white;
+    font-size: 16px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.rsvp-btn:hover {
+    background-color: #0056b3;
+}
+
+/* RSVP Cancel Button */
+.rsvp-cancel {
+    background-color: #dc3545;
+}
+
+.rsvp-cancel:hover {
+    background-color: #a71d2a;
+}
+
+/* Popup Overlay */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* Popup Content */
+.popup-content {
+    position: relative; /* Ensures close button is positioned correctly */
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+}
+
+/* Popup Buttons */
+.popup-buttons button {
+    margin: 10px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+/* Calendar Button */
+.calendar-btn {
+    background-color: #28a745;
+    color: white;
+}
+
+.calendar-btn:hover {
+    background-color: #1e7e34;
+}
+
+/* Cancel Button */
+.cancel-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+.cancel-btn:hover {
+    background-color: #a71d2a;
+}
+
+/* Close Button */
+.close-btn {
+    background-color: #6c757d;
+    color: white;
+}
+
+.close-btn:hover {
+    background-color: #5a6268;
+}
+
+/* Popup Close Button (X Button) */
+.popup-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #333;
+    padding: 5px;
+    transition: color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+/* Hover Effect for Close Button */
+.popup-close-btn:hover {
+    color: red;
+    transform: scale(1.2);
+}

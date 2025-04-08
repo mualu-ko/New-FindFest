@@ -1,0 +1,37 @@
+/* Footer Styling */
+.footer {
+    background-color: #444; /* Lighter dark gray */
+    color: white;
+    text-align: center;
+    padding: 20px 10px;
+    font-size: 14px;
+    position: fixed; /* Fixes it to the bottom */
+    bottom: 0;
+    left: 0;
+    width: 100%;
+}
+
+/* Footer Links */
+.footer-links {
+    margin-bottom: 10px;
+}
+
+.footer-links a {
+    color: #e0e0e0; /* Softer white for better readability */
+    text-decoration: none;
+    margin: 0 15px;
+    font-size: 16px;
+    font-weight: bold;
+    transition: color 0.3s ease-in-out;
+}
+
+/* Hover effect for links */
+.footer-links a:hover {
+    color: #ffcc00; /* Brighter yellow on hover */
+}
+
+/* Copyright Text */
+.copyright {
+    font-size: 13px;
+    opacity: 0.9;
+}

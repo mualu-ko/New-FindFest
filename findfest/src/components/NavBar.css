@@ -1,0 +1,316 @@
+.sidebar-container {
+    position: relative;
+    width: auto;
+}
+
+/* 🏠 Sidebar (Collapsible Navbar) */
+.navbar {
+    width: 250px;  /* Fixed width for larger screens */
+    height: 100vh;
+    background-color: #ffffff;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    position: fixed;
+    top: 0;
+    left: -300px; /* Initially hidden */
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    transition: left 0.5s ease-in-out;
+    z-index: 1000;
+}
+
+/* Sidebar Open */
+.navbar.open {
+    left: 0;
+}
+
+/* 🔹 Sidebar Header (Prevents Logo Overlap) */
+.navbar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Ensures spacing between logo & close button */
+    width: 100%;
+    position: relative;
+}
+
+/* ❌ Close Button (Fixed Inside Sidebar) */
+.close-btn {
+    display: none;
+}
+
+/* 🌙 Overlay Effect (For Closing Sidebar on Click) */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 900;
+    display: none;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.overlay.show {
+    display: block;
+    opacity: 1;
+}
+
+/* 🛠 Sidebar Toggle Button */
+.menu-btn {
+    position: fixed;
+    top: 40px;
+    left: 30px;
+    background: none;
+    border: none;
+    color: black;
+    font-size: 24px;
+    cursor: pointer;
+    transition: left 0.5s ease-in-out;
+    z-index: 1001;
+}
+
+/* Move menu button when sidebar is open */
+.sidebar-container .menu-btn.shift-right {
+    left: 230px;
+}
+
+
+.menu-btn:hover {
+    transform: scale(1.1);
+}
+.menu-btn:focus {
+    outline: none;
+}
+/* 🔹 Restore Logo Styling */
+.navbar .logo {
+    font-size: 28px;
+    font-weight: bold;
+    font-family: 'Inter', sans-serif;
+    color: black;
+    text-decoration: none;
+    letter-spacing: 0.5px;
+    transition: text-shadow 0.3s ease-in-out;
+    display: flex;
+    align-items: center;
+    padding-left: 10px; /* Ensures space from close button */
+    margin-bottom: 30px;
+}
+
+/* Ensure clickable link styling remains */
+.navbar .logo .home-link {
+    color: black;
+    text-decoration: none;
+}
+
+.navbar .logo:hover {
+    text-shadow: 0px 0px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* 🎛️ Filters Container */
+.filters-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+/* 🏷️ Hide Filters Button */
+.hide-filters-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    transition: all 0.3s ease-in-out;
+    display: block;
+    width: 100%;
+    max-width: 200px;
+    text-align: center;
+    margin: 10px auto;
+}
+
+.hide-filters-btn:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+}
+
+.hide-filters-btn:active {
+    transform: scale(0.95);
+}
+
+/* 🏷️ Category Filters */
+.category-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.category-button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 20px;
+    background: #e0e0e0;
+    color: #333;
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.category-button:hover {
+    background: #d6d6d6;
+}
+
+/* ✅ Active Category */
+.category-button.active {
+    background: #007bff;
+    color: white;
+    font-weight: bold;
+}
+
+/* 📆 Date Filter */
+.date-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.date-filter select {
+    padding: 8px 12px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.date-filter select:hover {
+    background: #f8f8f8;
+}
+
+.date-filter select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0px 0px 4px rgba(0, 123, 255, 0.5);
+}
+
+/* 🏷️ Selected Filters Display */
+.selected-filter {
+    background: #eef5ff;
+    color: #004085;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 10px;
+    display: inline-block;
+    border: 1px solid #b8daff;
+}
+
+/* 🏠 Navbar Links */
+.nav-links {
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #333;
+    font-size: 16px;
+    padding: 10px 15px;
+    border-radius: 5px;
+    transition: background 0.3s, color 0.3s;
+}
+
+.nav-links a:hover {
+    background-color: #007bff;
+    color: white;
+}
+
+/* 🔄 Responsive Fixes */
+@media (max-width: 768px) {
+    .navbar {
+        width: 250px; /* Fixed width */
+    }
+}
+
+@media (max-width: 480px) {
+    .navbar {
+        width: 220px; /* Slightly smaller on mobile */
+    }
+
+    .menu-btn {
+        left: 10px;
+    }
+
+    .nav-links a {
+        font-size: 14px;
+        padding: 8px;
+    }
+}
+/* 🏷️ Clear Filters Button */
+.clear-filters-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    transition: all 0.3s ease-in-out;
+    display: block;
+    width: 100%;
+    max-width: 200px;
+    text-align: center;
+    margin: 10px auto;
+}
+
+.clear-filters-btn:hover {
+    background-color: #c82333;
+    transform: scale(1.05);
+}
+
+.clear-filters-btn:active {
+    transform: scale(0.95);
+}
+.auth-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .login-btn,
+  .logout-btn {
+    padding: 8px 16px;
+    background-color: #007bff; /* Primary blue */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .login-btn:hover,
+  .logout-btn:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+  }
+  
+  .logout-btn {
+    background-color: #dc3545; /* Red for logout */
+  }
+  
+  .logout-btn:hover {
+    background-color: #b02a37;
+  }
+  
