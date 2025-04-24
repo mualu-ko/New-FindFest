@@ -1,26 +1,58 @@
 import { useState, useEffect } from "react";
-import { auth, database } from "../config/firebase";
-import { doc, setDoc, deleteDoc, getDoc } from "firebase/firestore";
+import { auth } from "../config/firebase";
+import api from "../utils/axios";
 import "./RSVP.css";
 
 const RSVP = ({ event = {} }) => {
     const [isRSVP, setIsRSVP] = useState(false);
+    const [rsvpCount, setRsvpCount] = useState(0);
     const [showPopup, setShowPopup] = useState(false);
     const [user, setUser] = useState(null);
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((currentUser) => {
             setUser(currentUser);
-            if (currentUser) checkRSVPStatus(currentUser.uid);
+            if (currentUser && event.id) {
+                checkRSVPStatus(currentUser.uid);
+            }
         });
         return () => unsubscribe();
-    }, []);
+    }, [event]);
+
+    useEffect(() => {
+        if (event.id) fetchRSVPCount();
+    }, [event]);
 
     const checkRSVPStatus = async (userId) => {
-        if (!event.id) return;
-        const rsvpRef = doc(database, "rsvps", `${userId}_${event.id}`);
-        const rsvpSnap = await getDoc(rsvpRef);
-        setIsRSVP(rsvpSnap.exists());
+        try {
+            const response = await api.get("/api/events/rsvp/check", {
+                params: { userId, eventId: event.id }
+            });
+
+            if (!response.data.isRSVPed) {
+                // RSVP doesn't exist, create with default status (backend handles it)
+                await api.post("/api/events/rsvp", {
+                    userId: userId,
+                    event: {
+                        id: event.id,
+                        name: event.name
+                    }
+                });
+            }
+
+            setIsRSVP(response.data.isRSVPed);
+        } catch (error) {
+            console.error("Error checking RSVP status:", error);
+        }
+    };
+
+    const fetchRSVPCount = async () => {
+        try {
+            const response = await api.get(`/api/events/rsvp/count/${event.id}`);
+            setRsvpCount(response.data.count || 0);
+        } catch (error) {
+            console.error("Error fetching RSVP count:", error);
+        }
     };
 
     const handleRSVP = async () => {
@@ -28,19 +60,41 @@ const RSVP = ({ event = {} }) => {
             alert("You need to be signed in to RSVP!");
             return;
         }
-        const rsvpRef = doc(database, "rsvps", `${user.uid}_${event.id}`);
-        if (isRSVP) {
-            await deleteDoc(rsvpRef);
-        } else {
-            await setDoc(rsvpRef, {
-                userId: user.uid,
-                eventId: event.id,
-                eventName: event.name,
-                timestamp: new Date(),
-            });
+
+        try {
+            if (isRSVP) {
+                // Cancel RSVP
+                await api.post("/api/events/rsvp/cancel", {
+                    userId: user.uid,
+                    eventId: event.id
+                });
+                setIsRSVP(false);
+                setRsvpCount(prevCount => prevCount - 1); // Decrease the count when cancelled
+            } else {
+                // Confirm RSVP
+                await api.post("/api/events/rsvp", {
+                    userId: user.uid,
+                    event: {
+                        id: event.id,
+                        name: event.name
+                    }
+                });
+                
+                // Update RSVP status to true
+                await api.post("/api/events/rsvp/update", {
+                    userId: user.uid,
+                    eventId: event.id,
+                    status: true  // Set the status to true when RSVPed
+                });
+
+                setIsRSVP(true);
+                setRsvpCount(prevCount => prevCount + 1); // Increase the count when RSVPed
+            }
+
+            setShowPopup(false);
+        } catch (error) {
+            console.error("Error handling RSVP:", error);
         }
-        setIsRSVP(!isRSVP);
-        setShowPopup(false);
     };
 
     const getGoogleCalendarLink = () => {
@@ -65,6 +119,8 @@ const RSVP = ({ event = {} }) => {
             >
                 {isRSVP ? "Cancel RSVP ❌" : "RSVP ✅"}
             </button>
+
+            <p className="rsvp-count">✅ {rsvpCount} people have RSVP'd</p>
 
             {showPopup && (
                 <div className="popup-overlay" tabIndex="0">

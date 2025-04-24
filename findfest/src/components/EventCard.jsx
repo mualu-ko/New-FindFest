@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import "./EventCard.css";
 
+import formatDate from "./utils/formatDate";
+
 const EventCard = ({ event, onFilter }) => {
     const navigate = useNavigate();
 
@@ -10,11 +12,15 @@ const EventCard = ({ event, onFilter }) => {
         navigate("/", { state: { selectedCategory: category } });
     };
 
+    // Log the event to check if the imageUrl is present
+    console.log(event);
+
     return (
         <div className="event-card" onClick={() => navigate(`/event/${event.id}`)}>
-            <img className="event-image" src={event.image} alt={event.name} />
+            {/* Ensure the image URL is correct */}
+            <img className="event-image" src={event.imageUrl} alt={event.name} />
             <h2>{event.name}</h2>
-            <p>📅 {event.date} | 📍 {event.location}</p>
+            <p>📅 {formatDate(event.date)} | 📍 {event.venue}</p>
 
             {/* Clickable Event Tags */}
             <div className="event-tags">

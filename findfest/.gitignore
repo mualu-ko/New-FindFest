@@ -11,7 +11,11 @@ node_modules
 dist
 dist-ssr
 *.local
-
+backend/config/
+src/config/
+src/config/firebase.js
+.env
+findfest-305ea-firebase-adminsdk-bim0g-8d8fb1b572.json
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

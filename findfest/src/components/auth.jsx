@@ -1,201 +1,132 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { auth, database } from "../config/firebase";
-import {
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    signInWithPopup,
-    GoogleAuthProvider,
-    updateProfile
-} from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 const Auth = () => {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [name, setName] = useState("");
-    const [isSignUp, setIsSignUp] = useState(false);
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
-    const provider = new GoogleAuthProvider();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [error, setError] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
+  const navigate = useNavigate();
+  const auth = getAuth();
+  const provider = new GoogleAuthProvider();
 
-    // 🔹 Sign up logic
-    const signUpWithEmail = async () => {
-        setError("");
-        setLoading(true);
+  const handleAuth = async (e) => {
+    e.preventDefault();
+    try {
+      const userCredential = isSignUp
+        ? await createUserWithEmailAndPassword(auth, email, password)
+        : await signInWithEmailAndPassword(auth, email, password);
 
-        if (!name.trim()) {
-            setError("Name is required for sign up.");
-            setLoading(false);
-            return;
-        }
+      // Refresh token to make sure it's valid
+      const idToken = await userCredential.user.getIdToken(true);
 
-        try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            await updateProfile(userCredential.user, {
-                displayName: name
-            });
+      // Send ID token and user info to backend
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token: idToken,
+          name: isSignUp ? name : null,
+        }),
+      });
 
-            await saveUserToDatabase({ ...userCredential.user, displayName: name });
+      const data = await response.json();
+      if (response.ok) {
+        console.log('Logged in!', data);
+        setEmail('');
+        setPassword('');
+        setName('');
+        navigate('/'); // Navigate to the home page after successful login/signup
+      } else {
+        throw new Error(data.message || 'Authentication failed');
+      }
+    } catch (err) {
+      console.error('Error:', err);
+      setError(err.message); // Display any error message returned by the backend
+    }
+  };
 
-            alert("User Created Successfully!");
-            navigate("/");
-        } catch (error) {
-            handleFirebaseError(error);
-        } finally {
-            setLoading(false);
-        }
-    };
+  const handleGoogleSignIn = async () => {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      const idToken = await user.getIdToken(true); // Refresh token to ensure it's valid
 
-    // 🔹 Log in logic
-    const loginWithEmail = async () => {
-        setError("");
-        setLoading(true);
+      // Send ID token to backend
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token: idToken,
+          name: user.displayName,
+        }),
+      });
 
-        try {
-            await signInWithEmailAndPassword(auth, email, password);
-            alert("Logged in successfully!");
-            navigate("/");
-        } catch (error) {
-            handleFirebaseError(error);
-        } finally {
-            setLoading(false);
-        }
-    };
+      const data = await response.json();
+      if (response.ok) {
+        console.log('Logged in with Google!', data);
+        navigate('/'); // Navigate to the home page after successful login
+      } else {
+        throw new Error(data.message || 'Google Sign-in failed');
+      }
+    } catch (err) {
+      console.error('Google sign-in error:', err);
+      setError('Google sign-in failed'); // Display specific error for Google sign-in
+    }
+  };
 
-    // 🔹 Google login/signup logic
-    const signInWithGoogle = async () => {
-        setError("");
-        setLoading(true);
+  return (
+    <div className="auth-container">
+      <h2 className="auth-title">{isSignUp ? 'Sign Up' : 'Log In'}</h2>
+      {error && <p className="auth-error">{error}</p>}
 
-        try {
-            const result = await signInWithPopup(auth, provider);
-            await saveUserToDatabase(result.user);
-            alert("Signed in with Google!");
-            navigate("/");
-        } catch (error) {
-            handleFirebaseError(error);
-        } finally {
-            setLoading(false);
-        }
-    };
+      {/* Google Sign-In Button */}
+      <button className="google-btn" onClick={handleGoogleSignIn}>
+        Sign In with Google
+      </button>
 
-    // 🔹 Save user to Firestore
-    const saveUserToDatabase = async (user) => {
-        const userRef = doc(database, "users", user.uid);
-        const userDoc = await getDoc(userRef);
+      <form onSubmit={handleAuth}>
+        {isSignUp && (
+          <input
+            className="auth-input"
+            type="text"
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required={isSignUp}
+          />
+        )}
+        <input
+          className="auth-input"
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          className="auth-input"
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button className="auth-submit" type="submit">
+          {isSignUp ? 'Sign Up' : 'Log In'}
+        </button>
+      </form>
 
-        if (!userDoc.exists()) {
-            await setDoc(userRef, {
-                uid: user.uid,
-                name: user.displayName || "Anonymous",
-                email: user.email,
-                profilePic: user.photoURL || "",
-                joinedAt: new Date().toISOString(),
-            });
-        }
-    };
-
-    // 🔹 Firebase error handling
-    const handleFirebaseError = (error) => {
-        switch (error.code) {
-            case "auth/email-already-in-use":
-                setError("That email is already in use.");
-                break;
-            case "auth/invalid-email":
-                setError("Invalid email address.");
-                break;
-            case "auth/weak-password":
-                setError("Password should be at least 6 characters.");
-                break;
-            case "auth/user-not-found":
-            case "auth/wrong-password":
-                setError("Incorrect email or password.");
-                break;
-            case "auth/popup-closed-by-user":
-                setError("Google sign-in popup was closed.");
-                break;
-            default:
-                setError(error.message || "Something went wrong.");
-                break;
-        }
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        isSignUp ? signUpWithEmail() : loginWithEmail();
-    };
-
-    return (
-        <div >
-            {/* Header section */}
-            <h2 className="auth-title">{isSignUp ? "Sign Up" : "Log In"}</h2>
-
-            {/* Google sign-in button (below header) */}
-            <button
-                className="google-btn"
-                onClick={signInWithGoogle}
-                disabled={loading}
-            >
-                {loading ? "Please wait..." : "Sign In with Google"}
-            </button>
-
-            {error && <p className="auth-error">{error}</p>}
-
-            <form className="auth-form" onSubmit={handleSubmit}>
-                {/* Sign up name input */}
-                {isSignUp && (
-                    <input
-                        className="auth-input"
-                        placeholder="Name..."
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                    />
-                )}
-
-                {/* Email input */}
-                <input
-                    className="auth-input"
-                    placeholder="Email..."
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                />
-                
-                {/* Password input */}
-                <input
-                    className="auth-input"
-                    placeholder="Password..."
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                />
-
-                {/* Already have an account link */}
-                <p className="auth-toggle">
-                    {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
-                    <span
-                        className="auth-toggle-link"
-                        onClick={() => {
-                            setIsSignUp(!isSignUp);
-                            setError("");
-                        }}
-                    >
-                        {isSignUp ? "Log In" : "Sign Up"}
-                    </span>
-                </p>
-
-                <button className="auth-submit" type="submit" disabled={loading}>
-                    {loading ? "Please wait..." : isSignUp ? "Sign Up" : "Log In"}
-                </button>
-            </form>
-        </div>
-    );
+      <p className="auth-toggle">
+        {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
+        <button className="auth-toggle-link" onClick={() => setIsSignUp(!isSignUp)}>
+          {isSignUp ? 'Log In' : 'Sign Up'}
+        </button>
+      </p>
+    </div>
+  );
 };
 
 export default Auth;

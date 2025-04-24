@@ -313,4 +313,29 @@
   .logout-btn:hover {
     background-color: #b02a37;
   }
-  
+  .initials-avatar {
+    width: 40px;
+    height: 40px;
+    background-color: #4A5568;
+    color: white;
+    font-weight: bold;
+    font-size: 1rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.5rem;
+}
+.account-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 0.5rem;
+}
+.account-preview {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+}

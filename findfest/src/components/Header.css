@@ -18,8 +18,8 @@
     letter-spacing: 0.5px;
     transition: text-shadow 0.3s ease-in-out;
     position: absolute;
-    left: 60px; /* Keeps it on the left */
-    top: 30px; /* Adjust for exact positioning */
+    left: 90px; /* Keeps it on the left */
+    top: 50px; /* Adjust for exact positioning */
 }
 
 .logo:hover {

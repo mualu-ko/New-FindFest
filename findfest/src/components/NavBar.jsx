@@ -6,8 +6,10 @@ import Searchbar from "./Searchbar";
 import CategoryFilter from "./CategoryFilter";
 import { auth } from "../config/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { database } from "../config/firebase";
 import "./Navbar.css";
-
+import Categories from "../constants/Categories";
 const Navbar = ({ onSearch, onFilter, onDaysChange }) => {
     const { events } = useContext(EventContext);
     const navigate = useNavigate();
@@ -19,11 +21,35 @@ const Navbar = ({ onSearch, onFilter, onDaysChange }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [filtersVisible, setFiltersVisible] = useState(false);
     const [user, setUser] = useState(null);
+    const [profileData, setProfileData] = useState(null);
+
+    // Helper to get initials
+    const getInitials = (name) => {
+        if (!name) return "U";
+        const words = name.trim().split(" ");
+        if (words.length === 1) return words[0][0].toUpperCase();
+        return words[0][0].toUpperCase() + words[1][0].toUpperCase();
+    };
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             setUser(currentUser);
+
+            if (currentUser) {
+                try {
+                    const userDocRef = doc(database, "users", currentUser.uid);
+                    const userSnapshot = await getDoc(userDocRef);
+                    if (userSnapshot.exists()) {
+                        setProfileData(userSnapshot.data());
+                    }
+                } catch (error) {
+                    console.error("Error fetching user data:", error);
+                }
+            } else {
+                setProfileData(null);
+            }
         });
+
         return () => unsubscribe();
     }, []);
 
@@ -32,8 +58,7 @@ const Navbar = ({ onSearch, onFilter, onDaysChange }) => {
         alert("Logged out successfully!");
     };
 
-    const categories = [...new Set(events.flatMap(event => event.categories || []))];
-
+    const categories = Categories;
     useEffect(() => {
         if (location.state?.searchQuery !== undefined && location.state.searchQuery !== searchQuery) {
             setSearchQuery(location.state.searchQuery);
@@ -86,7 +111,6 @@ const Navbar = ({ onSearch, onFilter, onDaysChange }) => {
 
     return (
         <div className="sidebar-container">
-            {/* ✅ Toggle Menu Button */}
             <button 
                 className={`menu-btn ${sidebarOpen ? "shift-right" : ""}`} 
                 onClick={toggleSidebar} 
@@ -95,10 +119,8 @@ const Navbar = ({ onSearch, onFilter, onDaysChange }) => {
                 {sidebarOpen ? <X size={28} /> : <Menu size={28} />}
             </button>
 
-            {/* ✅ Overlay */}
             <div className={`overlay ${sidebarOpen ? "show" : ""}`} onClick={closeSidebar}></div>
 
-            {/* ✅ Sidebar */}
             <nav className={`navbar ${sidebarOpen ? "open" : ""}`}>
                 <div className="navbar-header">
                     <div className="logo">
@@ -111,17 +133,14 @@ const Navbar = ({ onSearch, onFilter, onDaysChange }) => {
                     </div>
                 </div>
 
-                {/* ✅ Search Bar */}
                 <div className="searchbar-container">
                     <Searchbar onSearch={handleSearch} searchQuery={searchQuery} />
                 </div>
 
-                {/* ✅ Show/Hide Filters Button */}
                 <button className="hide-filters-btn" onClick={toggleFilters}>
                     {filtersVisible ? "Hide Filters" : "Show Filters"}
                 </button>
 
-                {/* ✅ Filters */}
                 {filtersVisible && (
                     <div className="filters-container">
                         <CategoryFilter 
@@ -148,7 +167,6 @@ const Navbar = ({ onSearch, onFilter, onDaysChange }) => {
                     </div>
                 )}
 
-                {/* ✅ Navigation Links */}
                 <div className="nav-links">
                     <Link to="/" onClick={(e) => {
                         e.preventDefault();
@@ -162,11 +180,25 @@ const Navbar = ({ onSearch, onFilter, onDaysChange }) => {
                     <Link to="/contact" onClick={closeSidebar}>Contact Us</Link>
                 </div>
 
-                {/* ✅ Auth Buttons */}
                 <div className="auth-section">
                     {user ? (
                         <>
-                            <span>Welcome, {user.displayName || "User"}!</span>
+                            <Link to="/my-account" onClick={closeSidebar} className="account-preview">
+                                {profileData?.profilePic ? (
+                                    <img 
+                                        src={profileData.profilePic} 
+                                        alt="Profile" 
+                                        className="account-avatar" 
+                                    />
+                                ) : (
+                                    <div className="initials-avatar">
+                                        {getInitials(profileData?.name || user.displayName || "User")}
+                                    </div>
+                                )}
+                                <span className="account-name">
+                                    {profileData?.name || user.displayName || "My Account"}
+                                </span>
+                            </Link>
                             <button className="logout-btn" onClick={logout}>Logout</button>
                         </>
                     ) : (

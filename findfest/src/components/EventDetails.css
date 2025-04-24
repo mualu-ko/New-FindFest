@@ -1,3 +1,13 @@
+/* Ensure the body fills the full height */
+body {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+/* Event details container - ensure it can scroll */
 .event-details {
     max-width: 800px;
     margin: 40px auto;
@@ -6,56 +16,21 @@
     background: #fff;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     text-align: center;
+    flex-grow: 1;  /* Allow this section to grow */
+    position: relative;
+    z-index: 1;  /* Keep content above map */
 }
 
-.event-image {
+/* Map container */
+.map-container {
+    height: 300px;
     width: 100%;
-    max-height: 400px;
-    object-fit: cover;
-    border-radius: 12px;
-    margin-bottom: 20px;
+    margin-top: 20px;
+    border-radius: 10px;
+    z-index: 0; /* Ensure map stays behind event details */
 }
 
-h2 {
-    font-size: 28px;
-    color: #333;
-    margin-bottom: 10px;
-}
-
-.event-tags {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-bottom: 15px;
-}
-
-.event-tag {
-    background: #007bff;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.event-tag:hover {
-    background: #0056b3;
-}
-
-p {
-    font-size: 18px;
-    color: #555;
-    margin: 10px 0;
-}
-
-.event-description {
-    font-size: 16px;
-    line-height: 1.5;
-    color: #444;
-    margin: 15px 0;
-}
-
+/* Share button */
 .share-btn {
     background: #28a745;
     color: white;
@@ -65,8 +40,40 @@ p {
     border-radius: 8px;
     cursor: pointer;
     margin-top: 20px;
+    position: relative;
+    z-index: 2; /* Make sure share button stays above the map */
 }
 
 .share-btn:hover {
     background: #218838;
 }
+
+/* Footer - fixed at the bottom of the viewport */
+footer {
+    background-color: #333;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    position: fixed; /* Fix the footer at the bottom */
+    left: 0;
+    bottom: 0;
+    width: 100%;  /* Full width */
+    z-index: 3;   /* Ensure footer is above all content */
+    box-sizing: border-box; /* Ensure proper sizing */
+    height: 80px; /* Set a height for the footer */
+}
+
+/* Ensure the page content doesn't get hidden under the footer */
+main {
+    padding-bottom: 80px; /* Add space at the bottom for the fixed footer */
+}
+.event-image {
+    width: 100%;
+    max-width: 800px;
+    height: auto;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    margin: 0 auto;
+    border-radius: 16px;
+  }
+  

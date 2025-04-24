@@ -1,0 +1,134 @@
+/* Container styling */
+.add-event-container {
+    max-width: 800px;
+    margin: auto;
+    padding: 2rem;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Form styling */
+.add-event-form label {
+    display: block;
+    margin-top: 1rem;
+    font-weight: bold;
+}
+
+.add-event-form input,
+.add-event-form textarea,
+.add-event-form select {
+    width: 100%;
+    padding: 0.5rem;
+    margin-top: 0.3rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Category checkboxes */
+.category-checkboxes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+/* Image preview */
+.image-preview img {
+    max-width: 200px;
+    margin-top: 0.5rem;
+    border-radius: 8px;
+}
+
+/* Modal styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1.5rem;
+}
+
+.modal-actions button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.modal-actions button:first-child {
+    background-color: #28a745;
+    color: white;
+}
+
+.modal-actions button:last-child {
+    background-color: #ccc;
+}
+/* Make sure map doesn't overlap other elements */
+.leaflet-container {
+    z-index: 1; /* Lower than navbar/footer */
+}
+
+.success-screen {
+    text-align: center;
+    padding: 20px;
+    background-color: #f4f4f4;
+    border-radius: 8px;
+}
+
+.success-screen h2 {
+    color: green;
+}
+
+.success-screen p {
+    font-size: 18px;
+}
+
+.success-screen .back-btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.success-screen .back-btn:hover {
+    background-color: #0056b3;
+}
+
+.submit-btn.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+.image-preview {
+    width: 150px;
+    height: auto;
+    object-fit: cover; /* Ensures the image doesn't stretch */
+    border-radius: 8px;
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px;
+  }
+  
