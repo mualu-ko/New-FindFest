@@ -160,6 +160,8 @@ const Navbar = ({ onSearch, onFilter, onDaysChange }) => {
                     <Link to="/" onClick={(e) => {
                         e.preventDefault();
                         clearAllFilters();
+                        navigate("/");
+                        closeSidebar();
                     }}>
                         Home
                     </Link>
