@@ -1,4 +1,5 @@
 const admin = require("../firebaseAdmin");
+
 const sendEmail = require("../utils/email");
 
 // RSVP to Event (check and create with default status if it doesn't exist)
@@ -21,6 +22,20 @@ exports.rsvpToEvent = async (req, res) => {
         updatedAt: new Date(),
       });
 
+      // --- Update user categoryFrequency ---
+      const eventDoc = await db.collection("events").doc(event.id).get();
+      const categories = eventDoc.exists ? (eventDoc.data().categories || []) : [];
+      const userRef = db.collection("users").doc(userId);
+      const userDoc = await userRef.get();
+      const currentFreq = userDoc.exists && userDoc.data().categoryFrequency ? userDoc.data().categoryFrequency : {};
+      for (const category of categories) {
+        currentFreq[category] = (currentFreq[category] || 0) + 1;
+      }
+      await userRef.update({ categoryFrequency: currentFreq });
+
+      // --- Recalculate global categoryFrequency ---
+      await recalculateGlobalCategoryFrequency(db);
+
       // ✅ Get current confirmed RSVP count
       const rsvpSnap = await db
         .collection("rsvps")
@@ -39,15 +54,31 @@ exports.rsvpToEvent = async (req, res) => {
         });
       }
 
+      console.log(`[RSVP] User ${userId} RSVPed to event ${event.id}`);
       return res.status(200).json({ message: "RSVP created and confirmed" });
     }
 
+    console.log(`[RSVP] User ${userId} tried to RSVP to event ${event.id}, but RSVP already exists.`);
     res.status(200).json({ message: "RSVP already exists" });
   } catch (err) {
     console.error("RSVP error:", err);
     res.status(500).json({ error: "Failed to RSVP" });
   }
 };
+
+// --- Helper: Recalculate global categoryFrequency ---
+async function recalculateGlobalCategoryFrequency(db) {
+  const usersSnapshot = await db.collection("users").get();
+  const globalFreq = {};
+  usersSnapshot.forEach(userDoc => {
+    const freq = userDoc.data().categoryFrequency || {};
+    for (const [cat, count] of Object.entries(freq)) {
+      globalFreq[cat] = (globalFreq[cat] || 0) + count;
+    }
+  });
+  await db.collection("meta").doc("categoryFrequency").set(globalFreq);
+  console.log("[RSVP] Global categoryFrequency recalculated:", globalFreq);
+}
 
 // Cancel RSVP (delete RSVP document)
 exports.cancelRSVP = async (req, res) => {
@@ -57,6 +88,25 @@ exports.cancelRSVP = async (req, res) => {
     const db = admin.firestore();
     const ref = db.collection("rsvps").doc(`${userId}_${eventId}`);
     await ref.delete();
+    console.log(`[RSVP] User ${userId} cancelled RSVP for event ${eventId}`);
+
+    // --- Update user categoryFrequency ---
+    const eventDoc = await db.collection("events").doc(eventId).get();
+    const categories = eventDoc.exists ? (eventDoc.data().categories || []) : [];
+    const userRef = db.collection("users").doc(userId);
+    const userDoc = await userRef.get();
+    const currentFreq = userDoc.exists && userDoc.data().categoryFrequency ? userDoc.data().categoryFrequency : {};
+    for (const category of categories) {
+      if (currentFreq[category]) {
+        currentFreq[category] -= 1;
+        if (currentFreq[category] <= 0) delete currentFreq[category];
+      }
+    }
+    await userRef.update({ categoryFrequency: currentFreq });
+
+    // --- Recalculate global categoryFrequency ---
+    await recalculateGlobalCategoryFrequency(db);
+
     res.status(200).json({ message: "RSVP cancelled" });
   } catch (err) {
     console.error("Cancel RSVP error:", err);

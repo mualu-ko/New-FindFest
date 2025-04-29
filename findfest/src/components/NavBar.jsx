@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect, useCallback } from "react";
+import React, { useContext, useEffect, useCallback, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { EventContext } from "./EventContext";
@@ -10,14 +10,13 @@ import { doc, getDoc } from "firebase/firestore";
 import { database } from "../config/firebase";
 import "./Navbar.css";
 import Categories from "../constants/Categories";
+import { useFilter } from "./FilterContext.jsx";
 const Navbar = ({ onSearch, onFilter, onDaysChange }) => {
     const { events } = useContext(EventContext);
     const navigate = useNavigate();
     const location = useLocation();
 
-    const [selectedCategory, setSelectedCategory] = useState("All");
-    const [selectedDays, setSelectedDays] = useState(location.state?.selectedDays ?? 30);
-    const [searchQuery, setSearchQuery] = useState(location.state?.searchQuery ?? "");
+    const { selectedCategory, setSelectedCategory, selectedDays, setSelectedDays, searchQuery, setSearchQuery, resetFilters } = useFilter();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [filtersVisible, setFiltersVisible] = useState(false);
     const [user, setUser] = useState(null);
@@ -60,15 +59,9 @@ const Navbar = ({ onSearch, onFilter, onDaysChange }) => {
 
     const categories = Categories;
     useEffect(() => {
-        if (location.state?.searchQuery !== undefined && location.state.searchQuery !== searchQuery) {
-            setSearchQuery(location.state.searchQuery);
-            onSearch(location.state.searchQuery);
-        }
-        if (location.state?.selectedDays !== undefined && location.state.selectedDays !== selectedDays) {
-            setSelectedDays(location.state.selectedDays);
-            onDaysChange(location.state.selectedDays);
-        }
-    }, [location.state]);
+
+
+    }, [location.state, searchQuery, selectedDays, setSearchQuery, setSelectedDays, onSearch, onDaysChange]);
 
     const toggleSidebar = useCallback(() => setSidebarOpen(prev => !prev), []);
     const closeSidebar = useCallback(() => setSidebarOpen(false), []);
@@ -89,8 +82,7 @@ const Navbar = ({ onSearch, onFilter, onDaysChange }) => {
 
     const handleDaysChange = (days) => {
         setSelectedDays(days);
-        onDaysChange(days);
-        navigate("/", { state: { ...location.state, selectedDays: days } });
+        // No navigation or router state update; just update context
     };
 
     const handleSearch = (query) => {
@@ -100,13 +92,8 @@ const Navbar = ({ onSearch, onFilter, onDaysChange }) => {
     };
 
     const clearAllFilters = () => {
-        setSelectedCategory("All");
-        setSelectedDays(0);
-        setSearchQuery("");
-        onFilter("All");
-        onDaysChange(0);
-        onSearch("");
-        navigate("/", { state: { searchQuery: "", selectedDays: 0, selectedCategory: "All" } });
+        resetFilters();
+        // No navigation or state update here; resetFilters already sets days to 0 (all events)
     };
 
     return (
@@ -125,11 +112,13 @@ const Navbar = ({ onSearch, onFilter, onDaysChange }) => {
                 <div className="navbar-header">
                     <div className="logo">
                         <Link to="/" className="home-link" onClick={(e) => {
-                            e.preventDefault(); 
-                            clearAllFilters();
-                        }}>
-                            FindFest
-                        </Link>
+                             e.preventDefault();
+                             clearAllFilters();
+                             navigate("/");
+                             closeSidebar();
+                         }}>
+                             FindFest
+                         </Link>
                     </div>
                 </div>
 

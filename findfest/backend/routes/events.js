@@ -14,6 +14,7 @@ const {
 } = require("../controller/RSVP");
 const { getCreatedEvents, getRSVPedEvents } = require("../controller/adminEvent");
 const { editEvent } = require("../controller/edit");
+const { getEventById } = require("../controller/event");
 // Event routes
 router.post("/", createEvent);
 router.get("/", getEvents);
@@ -30,4 +31,7 @@ router.get("/rsvp/count/:eventId", getRSVPCount);
 router.get("/created/:userId", getCreatedEvents);
 router.get("/rsvp/:userId", getRSVPedEvents);
 router.put('/:id', editEvent);
+// Get single event by ID
+router.get('/:id', getEventById);
+
 module.exports = router;

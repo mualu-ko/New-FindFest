@@ -3,38 +3,32 @@ import { useState } from "react";
 import Navbar from "./Navbar";
 import Header from "./Header"; 
 import Footer from "./Footer";
+import { FilterProvider, useFilter } from "./FilterContext.jsx";
 
-const Layout = ({ searchQuery: initialSearchQuery, setSearchQuery: parentSetSearchQuery, clearAllFilters, user }) => {
-    const [selectedCategory, setSelectedCategory] = useState("All");
-    const [searchQuery, setSearchQuery] = useState(initialSearchQuery || "");
-    const [daysFilter, setDaysFilter] = useState(0);
-
+const LayoutInner = ({ user }) => {
+    const { selectedCategory, setSelectedCategory, searchQuery, setSearchQuery, selectedDays, setSelectedDays, resetFilters } = useFilter();
     const navigate = useNavigate();
 
     const handleSearch = (query) => {
         setSearchQuery(query);
-        parentSetSearchQuery(query);
-        navigate("/", { state: { searchQuery: query, selectedCategory, daysFilter } });
+        navigate("/", { state: { searchQuery: query, selectedCategory, daysFilter: selectedDays } });
     };
 
-    const resetFilters = () => {
-        setSearchQuery("");
-        setSelectedCategory("All");
-        setDaysFilter(0);
-        clearAllFilters();
-        navigate("/", { state: { searchQuery: "", selectedCategory: "All", daysFilter: 0 } });
+    const handleResetFilters = () => {
+        resetFilters();
+        navigate("/", { state: { searchQuery: "", selectedCategory: "All", daysFilter: 30 } });
     };
 
     return (
         <div className="flex flex-col min-h-screen bg-gray-100">
-            <Navbar onSearch={handleSearch} onFilter={setSelectedCategory} onDaysChange={setDaysFilter} />
-            <Header searchQuery={searchQuery} setSearchQuery={handleSearch} resetFilters={resetFilters} />
+            <Navbar onSearch={handleSearch} onFilter={setSelectedCategory} onDaysChange={setSelectedDays} />
+            <Header searchQuery={searchQuery} setSearchQuery={handleSearch} resetFilters={handleResetFilters} />
             <main className="flex-grow container mx-auto px-4 py-6">
-                <Outlet context={{ selectedCategory, searchQuery, daysFilter, setSelectedCategory }} />
+                <Outlet context={{ selectedCategory, searchQuery, daysFilter: selectedDays, setSelectedCategory }} />
             </main>
             <Footer />
         </div>
     );
 };
 
-export default Layout;
+export default LayoutInner;

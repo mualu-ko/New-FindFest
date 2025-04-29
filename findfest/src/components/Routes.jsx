@@ -46,15 +46,10 @@ const AppRoutes = () => {
         <Route
           path="/"
           element={
-            <Layout
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              clearAllFilters={clearAllFilters}
-              user={user}
-            />
+            <Layout user={user} />
           }
         >
-          <Route index element={<Home searchQuery={searchQuery} />} />
+          <Route index element={<Home />} />
           <Route path="event/:id" element={<EventPage />} />
           <Route path="about" element={<AboutUs />} />
           <Route path="contact" element={<ContactUs />} />

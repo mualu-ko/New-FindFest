@@ -1,19 +1,18 @@
 import { useNavigate } from "react-router-dom";
 import "./EventCard.css";
-
+import { useFilter } from "./FilterContext.jsx";
 import formatDate from "./utils/formatDate";
 
-const EventCard = ({ event, onFilter }) => {
+const EventCard = ({ event }) => {
     const navigate = useNavigate();
+    const { setSelectedCategory } = useFilter();
 
     const handleCategoryClick = (e, category) => {
         e.stopPropagation(); // Prevent navigation to event details
-        onFilter(category);
-        navigate("/", { state: { selectedCategory: category } });
+        setSelectedCategory(category);
     };
 
-    // Log the event to check if the imageUrl is present
-    console.log(event);
+ 
 
     return (
         <div className="event-card" onClick={() => navigate(`/event/${event.id}`)}>

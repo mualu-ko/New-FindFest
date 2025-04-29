@@ -7,6 +7,7 @@ const cloudinaryRoutes = require("./routes/cloudinary"); // Cloudinary routes
 const userRoutes = require("./routes/user"); // User routes
 const followRoutes = require("./routes/follow"); // Follow routes
 const eventRoutes = require("./routes/events"); // Event routes
+const recommenderRoutes = require("./routes/recommender");
 const app = express();
 
 // Middleware
@@ -14,17 +15,12 @@ app.use(cors());
 app.use(express.json()); // for parsing application/json
 app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 
-// Cloudinary routes
+// Register routes
 app.use("/api/cloudinary", cloudinaryRoutes);
-
-// User routes
 app.use("/api/user", userRoutes);
-
-// Follow routes
 app.use("/api/follow", followRoutes);
-
-// Event routes
 app.use("/api/events", eventRoutes);
+app.use("/api/recommendations", recommenderRoutes);
 
 // Firebase Auth Route
 app.post("/auth", async (req, res) => {

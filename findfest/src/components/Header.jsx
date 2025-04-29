@@ -1,10 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
 import Searchbar from "./Searchbar";
 import "./Header.css";
+import { useFilter } from "./FilterContext.jsx";
 
-const Header = ({ searchQuery, setSearchQuery, resetFilters }) => {
+const Header = () => {
     const navigate = useNavigate();
+    const { searchQuery, setSearchQuery, resetFilters } = useFilter();
 
     const handleSearch = (query) => {
         setSearchQuery(query);
@@ -19,7 +20,7 @@ const Header = ({ searchQuery, setSearchQuery, resetFilters }) => {
     return (
         <header className="page-header">
             <div className="header-container">
-                <Link to="/" className="logo" onClick={handleFindFestClick}>FindFest</Link>
+                <span className="logo" style={{cursor: 'pointer'}} onClick={handleFindFestClick}>FindFest</span>
                 <Searchbar searchQuery={searchQuery} onSearch={handleSearch} />
             </div>
         </header>
