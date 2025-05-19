@@ -12,6 +12,7 @@ import SignIn from "./SignIn";
 import EventProvider from "./EventContext";
 import MyAccount from "./MyAccount";
 import AdminPage from "./AdminPage";
+import AdminAttendance from "./AdminAttendance";
 import UserProfile from "./UserProfile"; // ✅ Added import
 
 const ProtectedRoute = ({ user, children }) => {
@@ -84,6 +85,14 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute user={user}>
                 <AdminPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="admin/event/:id/attendance"
+            element={
+              <ProtectedRoute user={user}>
+                <AdminAttendance />
               </ProtectedRoute>
             }
           />

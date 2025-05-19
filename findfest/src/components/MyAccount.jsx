@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import axios from "../utils/axios";
 import CloudinaryUploadButton from "./ImageUpload";
 import VenueSearchMap from "./MapCreate";
+import AdminDashboard from "./AdminDashboard";
 import "./MyAccount.css";
 
 const MyAccount = () => {
@@ -45,7 +46,9 @@ const MyAccount = () => {
           profilePic: data.profilePic ?? "",
           emailPublic: data.emailPublic ?? false,
           location: data.location || { venue: "", latitude: "", longitude: "" },
+          isAdmin: data.isAdmin ?? false,
         });
+        console.log("[MyAccount] user.isAdmin:", data.isAdmin);
       } catch (err) {
         setError("Failed to fetch user profile.");
         console.error(err);
@@ -133,8 +136,69 @@ const MyAccount = () => {
     );
   };
 
+  // --- Admin Dashboard State and Logic ---
+  const [allUsers, setAllUsers] = useState([]);
+  const [allEvents, setAllEvents] = useState([]);
+  const [adminLoading, setAdminLoading] = useState(false);
+  const [adminError, setAdminError] = useState("");
+
+  useEffect(() => {
+    const fetchAdminData = async () => {
+      if (!user.isAdmin) return;
+      setAdminLoading(true);
+      setAdminError("");
+      try {
+        const currentUser = auth.currentUser;
+        const token = await currentUser.getIdToken();
+        // Fetch all users
+        const usersRes = await axios.get("/api/admin/users", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setAllUsers(usersRes.data);
+        // Fetch all events
+        const eventsRes = await axios.get("/api/events");
+        setAllEvents(eventsRes.data);
+      } catch (err) {
+        setAdminError("Failed to fetch admin data");
+        console.error(err);
+      } finally {
+        setAdminLoading(false);
+      }
+    };
+    fetchAdminData();
+  }, [user.isAdmin, auth]);
+
+  // Admin actions
+  const handleDeleteEvent = async (eventId) => {
+    try {
+      const currentUser = auth.currentUser;
+      const token = await currentUser.getIdToken();
+      await axios.delete(`/api/admin/event/${eventId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setAllEvents((prev) => prev.filter((e) => e.id !== eventId));
+    } catch (err) {
+      alert("Failed to delete event");
+    }
+  };
+  const handleBanUser = async (uid) => {
+    try {
+      const currentUser = auth.currentUser;
+      const token = await currentUser.getIdToken();
+      await axios.post(`/api/admin/ban/${uid}`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setAllUsers((prev) => prev.map((u) => u.uid === uid ? { ...u, banned: true } : u));
+    } catch (err) {
+      alert("Failed to ban user");
+    }
+  };
+
   return (
     <div className="my-account">
+      {/* Admin Dashboard (above My Account) */}
+      {user.isAdmin && <AdminDashboard user={user} />}
+
       <h2>My Account</h2>
 
       {error && <p className="error">{error}</p>}
@@ -203,6 +267,8 @@ const MyAccount = () => {
           {loading ? "Updating..." : "Update Location"}
         </button>
       </div>
+
+      
     </div>
   );
 };

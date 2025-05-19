@@ -140,12 +140,16 @@ exports.getRecommendations = async (req, res) => {
       // Support both lat/lon and latitude/longitude in event.location
       const eventLat = event.location.lat !== undefined ? event.location.lat : event.location.latitude;
       const eventLon = event.location.lon !== undefined ? event.location.lon : event.location.longitude;
-      if (location && event.location && eventLat !== undefined && eventLon !== undefined) {
+      // Only calculate distanceWeight if user location is present
+      if (location && location.lat !== undefined && location.lon !== undefined && event.location && eventLat !== undefined && eventLon !== undefined) {
         const { weight } = calculateDistanceAndWeight(
           { lat: location.lat, lon: location.lon },
           { lat: eventLat, lon: eventLon }
         );
         distanceWeight = weight;
+      } else {
+        // Explicitly set to 0 if no user location
+        distanceWeight = 0;
       }
 
       // 4. Social boosts

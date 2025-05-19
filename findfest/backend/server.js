@@ -8,6 +8,8 @@ const userRoutes = require("./routes/user"); // User routes
 const followRoutes = require("./routes/follow"); // Follow routes
 const eventRoutes = require("./routes/events"); // Event routes
 const recommenderRoutes = require("./routes/recommender");
+const adminRoutes = require("./routes/admin");
+const organizerRoutes = require("./routes/organizer");
 const app = express();
 
 // Middleware
@@ -21,6 +23,8 @@ app.use("/api/user", userRoutes);
 app.use("/api/follow", followRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/recommendations", recommenderRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/organizer", organizerRoutes);
 
 // Firebase Auth Route
 app.post("/auth", async (req, res) => {
@@ -43,6 +47,7 @@ app.post("/auth", async (req, res) => {
         email: decodedToken.email,
         profilePic: decodedToken.picture || "",
         joinedAt: new Date().toISOString(),
+        isAdmin: false // Add isAdmin by default
       });
     }
 

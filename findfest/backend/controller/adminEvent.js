@@ -39,8 +39,25 @@ exports.getUserCreatedEvents = async (req, res) => {
 // Get RSVP analytics for an event
 exports.getEventAnalytics = async (req, res) => {
   const { eventId } = req.params;
+  const uid = req.user.uid;
 
   try {
+    // Get the event
+    const eventDoc = await db.collection("events").doc(eventId).get();
+    if (!eventDoc.exists) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+    const eventData = eventDoc.data();
+
+    // Get user info
+    const userDoc = await db.collection("users").doc(uid).get();
+    const userData = userDoc.exists ? userDoc.data() : {};
+
+    // Allow only event creator or admin
+    if (eventData.createdBy !== uid && !userData.isAdmin) {
+      return res.status(403).json({ message: "Not authorized to view analytics for this event." });
+    }
+
     const snapshot = await db
       .collection("rsvps")
       .where("eventId", "==", eventId)

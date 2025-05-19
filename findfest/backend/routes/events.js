@@ -13,8 +13,12 @@ const {
     getRSVPCount 
 } = require("../controller/RSVP");
 const { getCreatedEvents, getRSVPedEvents } = require("../controller/adminEvent");
+const { getEventAnalytics } = require("../controller/eventAnalytics");
+const { getAttendanceList, setAttendance } = require("../controller/attendance");
 const { editEvent } = require("../controller/edit");
 const { getEventById } = require("../controller/event");
+const { sendEventEmail } = require("../controller/eventEmail");
+const { rateEvent, getEventRatings } = require("../controller/ratings");
 // Event routes
 router.post("/", createEvent);
 router.get("/", getEvents);
@@ -31,6 +35,16 @@ router.get("/rsvp/count/:eventId", getRSVPCount);
 router.get("/created/:userId", getCreatedEvents);
 router.get("/rsvp/:userId", getRSVPedEvents);
 router.put('/:id', editEvent);
+// Analytics endpoint for event admin or global admin
+router.get('/analytics/:eventId', verifyToken, getEventAnalytics);
+// Attendance endpoints
+router.get('/attendance/:eventId', verifyToken, getAttendanceList);
+router.post('/attendance/:eventId', verifyToken, setAttendance);
+// Email blast endpoint
+router.post('/send-email/:eventId', verifyToken, sendEventEmail);
+// Event rating endpoints
+router.post('/rate/:eventId', verifyToken, rateEvent);
+router.get('/ratings/:eventId', verifyToken, getEventRatings);
 // Get single event by ID
 router.get('/:id', getEventById);
 

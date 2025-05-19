@@ -3,6 +3,7 @@ import { useNavigate, useOutletContext } from "react-router-dom";
 import RSVP from "./RSVP";
 import api from "../utils/axios"; // ⬅️ Make sure this is imported
 import "./EventDetails.css";
+import EventRating from "./EventRating";
 
 const MapView = lazy(() => import("./MapView"));
 
@@ -78,6 +79,8 @@ const EventDetails = ({ event }) => {
       <p>📅 {event.date} | 🕙 {event.time}</p>
       <p>📍 {venue}</p>
       <p className="event-description">{event.description}</p>
+      {/* ⭐ Event Rating */}
+      <EventRating eventId={event.id} />
 
       <Suspense fallback={<div>Loading map...</div>}>
         {latitude && longitude ? (
