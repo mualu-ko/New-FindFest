@@ -10,6 +10,7 @@ const eventRoutes = require("./routes/events"); // Event routes
 const recommenderRoutes = require("./routes/recommender");
 const adminRoutes = require("./routes/admin");
 const organizerRoutes = require("./routes/organizer");
+const mpesaRoutes = require("./routes/mpesa");
 const app = express();
 
 // Middleware
@@ -25,6 +26,7 @@ app.use("/api/events", eventRoutes);
 app.use("/api/recommendations", recommenderRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/organizer", organizerRoutes);
+app.use("/api/mpesa", mpesaRoutes);
 
 // Firebase Auth Route
 app.post("/auth", async (req, res) => {

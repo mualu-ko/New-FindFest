@@ -1,68 +1,98 @@
 const admin = require("../firebaseAdmin");
 
 const sendEmail = require("../utils/email");
+const QRCode = require('qrcode');
+const { v4: uuidv4 } = require('uuid');
+const { generateTicketPDF } = require('../utils/pdfGenerator');
+// use preconfigured Cloudinary instance
+const cloudinary = require('../cloudinary');
+const streamifier = require('streamifier');
 
 // RSVP to Event (check and create with default status if it doesn't exist)
 exports.rsvpToEvent = async (req, res) => {
   const { userId, event } = req.body;
-
+  const db = admin.firestore();
   try {
-    const db = admin.firestore();
-    const ref = db.collection("rsvps").doc(`${userId}_${event.id}`);
+    const ref = db.collection('rsvps').doc(`${userId}_${event.id}`);
     const snap = await ref.get();
-
-    if (!snap.exists) {
-      // Create new RSVP
-      await ref.set({
-        userId,
-        eventId: event.id,
-        eventName: event.name,
-        status: true, // Auto-confirmed
-        timestamp: new Date(),
-        updatedAt: new Date(),
-      });
-
-      // --- Update user categoryFrequency ---
-      const eventDoc = await db.collection("events").doc(event.id).get();
-      const categories = eventDoc.exists ? (eventDoc.data().categories || []) : [];
-      const userRef = db.collection("users").doc(userId);
-      const userDoc = await userRef.get();
-      const currentFreq = userDoc.exists && userDoc.data().categoryFrequency ? userDoc.data().categoryFrequency : {};
-      for (const category of categories) {
-        currentFreq[category] = (currentFreq[category] || 0) + 1;
-      }
-      await userRef.update({ categoryFrequency: currentFreq });
-
-      // --- Recalculate global categoryFrequency ---
-      await recalculateGlobalCategoryFrequency(db);
-
-      // ✅ Get current confirmed RSVP count
-      const rsvpSnap = await db
-        .collection("rsvps")
-        .where("eventId", "==", event.id)
-        .where("status", "==", true)
-        .get();
-
-      const count = rsvpSnap.size;
-
-      // ✅ If count is a multiple of 10, notify organizer
-      if (count % 10 === 0 && event.organizerEmail) {
-        await sendEmail({
-          to: event.organizerEmail,
-          subject: `🎉 ${count} People Have RSVPed to Your Event "${event.name}"!`,
-          html: `<p>Your event <strong>${event.name}</strong> has reached <strong>${count}</strong> RSVPs! 🎉</p>`,
-        });
-      }
-
-      console.log(`[RSVP] User ${userId} RSVPed to event ${event.id}`);
-      return res.status(200).json({ message: "RSVP created and confirmed" });
+    // fetch user
+    const userRef = db.collection('users').doc(userId);
+    const userDoc = await userRef.get();
+    if (!userDoc.exists) {
+      console.error('User not found:', userId);
+      return res.status(404).json({ error: 'User not found' });
     }
-
-    console.log(`[RSVP] User ${userId} tried to RSVP to event ${event.id}, but RSVP already exists.`);
-    res.status(200).json({ message: "RSVP already exists" });
+    const email = userDoc.data().email;
+    const userName = userDoc.data().name || '';
+    // confirm or create RSVP
+    if (!snap.exists) {
+      await ref.set({ userId, eventId: event.id, eventName: event.name, status: true, timestamp: new Date(), updatedAt: new Date() });
+      // update user category freq
+      const eventDoc = await db.collection('events').doc(event.id).get();
+      const categories = eventDoc.data()?.categories || [];
+      const freq = userDoc.data().categoryFrequency || {};
+      categories.forEach(cat => { freq[cat] = (freq[cat] || 0) + 1; });
+      await userRef.update({ categoryFrequency: freq });
+      await recalculateGlobalCategoryFrequency(db);
+    } else if (snap.data().status === false) {
+      await ref.update({ status: true, updatedAt: new Date() });
+    } else {
+      console.log(`RSVP already exists for user ${userId}, event ${event.id}`);
+      return res.status(200).json({ message: 'RSVP already exists' });
+    }
+    // generate ticket
+    const ticketId = uuidv4();
+    const qrData = `ticket:${ticketId}`;
+    const qrImage = await QRCode.toDataURL(qrData);
+    await db.collection('tickets').doc(ticketId).set({ ticketId, eventId: event.id, userId, qrData, createdAt: Date.now() });
+    // fetch official event name from Firestore to ensure it's defined
+    const eventDoc = await db.collection('events').doc(event.id).get();
+    // fetch DB event data for name and image
+    const eventDataFromDb = eventDoc.exists ? eventDoc.data() : { name: event.name, imageUrl: '' };
+    const officialEventName = eventDataFromDb.name;
+    const photoUrl = eventDataFromDb.imageUrl;
+    const pdfBuffer = await generateTicketPDF({
+      ticketId,
+      eventName: officialEventName,
+      userName,
+      qrImage,
+      photoUrl
+    });
+    // upload PDF to Cloudinary with .pdf extension in public_id
+    const uploadResult = await new Promise((resolve, reject) => {
+      console.log('[Cloudinary] uploading PDF with .pdf in public_id');
+      const cldStream = cloudinary.uploader.upload_stream(
+        { resource_type: 'raw', folder: 'tickets', public_id: `ticket-${ticketId}.pdf` },
+        (err, result) => err ? reject(err) : resolve(result)
+      );
+      streamifier.createReadStream(pdfBuffer).pipe(cldStream);
+    });
+    console.log('[Cloudinary] uploadResult:', uploadResult);
+    // Use the Cloudinary base URL (no analytics params) for links
+    const fileUrl = uploadResult.url; // example: https://res.cloudinary.com/.../ticket-xxx.pdf
+    console.log('[Cloudinary] link URL:', fileUrl);
+    await db.collection('tickets').doc(ticketId).update({ url: fileUrl });
+    // send ticket email
+    console.log('[RSVP] Sending ticket email to:', email);
+    try {
+      const emailOptions = {
+        to: [email],
+        subject: 'Your FindFest Ticket',
+        html: `<p>Hi ${userName}, your ticket is attached.</p>`,
+        attachments: [{ filename: `ticket-${ticketId}.pdf`, content: pdfBuffer, contentType: 'application/pdf' }],
+      };
+      console.log('[RSVP] Email options:', emailOptions);
+      const emailResult = await sendEmail(emailOptions);
+      console.log('[RSVP] Email sent result:', emailResult);
+    } catch (emailErr) {
+      console.error('[RSVP] Error sending ticket email:', emailErr);
+    }
+    console.log(`[Ticket] Generated ticket ${ticketId} for user ${userId}`);
+    // respond with ticketId and Cloudinary URL
+    return res.status(200).json({ message: 'RSVP confirmed and ticket generated', ticketId, url: fileUrl });
   } catch (err) {
-    console.error("RSVP error:", err);
-    res.status(500).json({ error: "Failed to RSVP" });
+    console.error('RSVP error:', err);
+    return res.status(500).json({ error: 'Failed to RSVP' });
   }
 };
 

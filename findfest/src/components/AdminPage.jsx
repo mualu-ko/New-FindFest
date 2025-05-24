@@ -115,6 +115,7 @@ useEffect(() => {
         imageUrl: foundEvent.imageUrl,
         latitude: foundEvent.location?.latitude || '',
         longitude: foundEvent.location?.longitude || '',
+        price: foundEvent.price ?? '',
       });
       setError("");
     } catch (err) {
@@ -160,6 +161,7 @@ useEffect(() => {
         latitude: formData.latitude,
         longitude: formData.longitude,
         imageUrl: formData.imageUrl,
+        price: formData.price,
       };
       await api.put(`/api/events/${id}`, payload);
 
@@ -241,6 +243,16 @@ useEffect(() => {
           <div>
             <label>Date:</label>
             <input type="date" name="date" value={formatDateInput(formData.date)} onChange={handleInputChange} />
+          </div>
+          <div>
+            <label>Ticket Price (USD):</label>
+            <input
+              type="number"
+              name="price"
+              value={formData.price}
+              onChange={handleInputChange}
+              step="0.01"
+            />
           </div>
 
           {/* Cloudinary image upload */}

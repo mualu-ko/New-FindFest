@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import { auth } from "../config/firebase";
 import api from "../utils/axios";
 import "./RSVP.css";
@@ -28,17 +28,6 @@ const RSVP = ({ event = {} }) => {
             const response = await api.get("/api/events/rsvp/check", {
                 params: { userId, eventId: event.id }
             });
-
-            if (!response.data.isRSVPed) {
-                // RSVP doesn't exist, create with default status (backend handles it)
-                await api.post("/api/events/rsvp", {
-                    userId: userId,
-                    event: {
-                        id: event.id,
-                        name: event.name
-                    }
-                });
-            }
 
             setIsRSVP(response.data.isRSVPed);
         } catch (error) {
@@ -71,22 +60,35 @@ const RSVP = ({ event = {} }) => {
                 setIsRSVP(false);
                 setRsvpCount(prevCount => prevCount - 1); // Decrease the count when cancelled
             } else {
-                // Confirm RSVP
-                await api.post("/api/events/rsvp", {
+                // Initiate M-Pesa STK Push with integer amount
+                const rawPrice = parseFloat(event.price);
+                const amount = Number.isNaN(rawPrice) ? 0 : Math.ceil(rawPrice);
+                if (amount <= 0) {
+                  alert("Invalid ticket price for payment");
+                  return;
+                }
+                const phoneNumber = prompt(`Enter your phone number for M-Pesa (KES ${amount}): `);
+                if (!phoneNumber) return;
+                // fire off M-Pesa STK Push but don't wait to avoid blocking ticket flow
+                api.post("/api/mpesa/stkpush", { phoneNumber, amount })
+                   .then(res => console.log("STK Push response:", res.data))
+                   .catch(err => console.error("STK Push error:", err));
+                // Confirm RSVP and generate ticket
+                const response = await api.post("/api/events/rsvp", {
                     userId: user.uid,
-                    event: {
-                        id: event.id,
-                        name: event.name
-                    }
+                    event: { id: event.id, name: event.name }
                 });
-                
-                // Update RSVP status to true
+                console.log("RSVP response data:", response.data);
+                const ticketId = response.data.ticketId;
+                console.log("Ticket generated:", ticketId);
+                // Open ticket PDF in new tab
+                window.open(`/api/events/${event.id}/tickets/${ticketId}`, "_blank");
+                // Update RSVP status
                 await api.post("/api/events/rsvp/update", {
                     userId: user.uid,
                     eventId: event.id,
-                    status: true  // Set the status to true when RSVPed
+                    status: true
                 });
-
                 setIsRSVP(true);
                 setRsvpCount(prevCount => prevCount + 1); // Increase the count when RSVPed
             }

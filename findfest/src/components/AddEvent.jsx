@@ -15,6 +15,7 @@ const AddEvent = () => {
         imageUrl: null,
         latitude: null,
         longitude: null,
+        price: "",      // Ticket price
         createdBy: "", // Placeholder for the creator's UID
     });
 
@@ -143,6 +144,7 @@ const AddEvent = () => {
                 imageUrl: null, // Reset the imageUrl field
                 latitude: null,
                 longitude: null,
+                price: "",      // Ticket price
                 createdBy: "", // Reset createdBy field
             });
             setErrorMessage(""); // Reset error message after successful submission
@@ -208,6 +210,25 @@ const AddEvent = () => {
                     name="venue"
                     value={eventData.venue}
                     readOnly
+                />
+
+                <label>Venue:</label>
+                <input
+                    type="text"
+                    name="venue"
+                    value={eventData.venue}
+                    onChange={handleChange}
+                    required
+                />
+
+                <label>Ticket Price (KES):</label>
+                <input
+                    type="number"
+                    name="price"
+                    value={eventData.price}
+                    onChange={handleChange}
+                    step="0.01"
+                    required
                 />
 
                 <label>Select up to 3 Categories (at least 1 required):</label>

@@ -4,7 +4,8 @@ const sendEmailNotification = require("../utils/email"); // Import email utility
 
 exports.editEvent = async (req, res) => {
   try {
-    const { name, description, venue, date, latitude, longitude, imageUrl } = req.body;
+    // Include price in editable fields
+    const { name, description, venue, date, latitude, longitude, imageUrl, price } = req.body;
     const id = req.params.id;
     if (!id) return res.status(400).json({ message: "Event ID is required." });
 
@@ -27,6 +28,10 @@ exports.editEvent = async (req, res) => {
         return res.status(400).json({ message: "Invalid coordinates." });
       }
       updateData.location = { latitude, longitude };
+    }
+    // Update price if provided
+    if (price != null) {
+      updateData.price = parseFloat(price);
     }
 
     if (Object.keys(updateData).length === 0) {

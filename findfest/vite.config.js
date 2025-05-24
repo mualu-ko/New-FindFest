@@ -6,9 +6,11 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: process.env.VITE_API_URL , // This will use the API URL from your environment variable
+        // Proxy to backend; fallback to localhost if env var is missing
+        target: process.env.VITE_API_URL || 'http://localhost:5000',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
+        // proxy /api to backend without altering path
+        // (no rewrite needed; proxies requests as-is to localhost:5000/api/...)
       },
     },
   },

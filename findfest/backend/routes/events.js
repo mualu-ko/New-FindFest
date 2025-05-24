@@ -17,8 +17,8 @@ const { getEventAnalytics } = require("../controller/eventAnalytics");
 const { getAttendanceList, setAttendance } = require("../controller/attendance");
 const { editEvent } = require("../controller/edit");
 const { getEventById } = require("../controller/event");
-const { sendEventEmail } = require("../controller/eventEmail");
 const { rateEvent, getEventRatings } = require("../controller/ratings");
+const ticketCtrl = require('../controller/ticketController');
 // Event routes
 router.post("/", createEvent);
 router.get("/", getEvents);
@@ -40,8 +40,10 @@ router.get('/analytics/:eventId', verifyToken, getEventAnalytics);
 // Attendance endpoints
 router.get('/attendance/:eventId', verifyToken, getAttendanceList);
 router.post('/attendance/:eventId', verifyToken, setAttendance);
-// Email blast endpoint
-router.post('/send-email/:eventId', verifyToken, sendEventEmail);
+// Ticket generation endpoint (skips payment)
+router.post('/:eventId/tickets', ticketCtrl.createTicket);
+// Serve ticket PDF in browser
+router.get('/:eventId/tickets/:ticketId', ticketCtrl.getTicketPDF);
 // Event rating endpoints
 router.post('/rate/:eventId', verifyToken, rateEvent);
 router.get('/ratings/:eventId', verifyToken, getEventRatings);

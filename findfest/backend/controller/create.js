@@ -16,7 +16,8 @@ module.exports = async function handler(req, res) {
       categories,
       imageUrl,
       latitude,
-      longitude
+      longitude,
+      price
     } = req.body;
 
     // Get the authenticated user's UID
@@ -24,8 +25,8 @@ module.exports = async function handler(req, res) {
       createdBy
     } = req.body;
 
-    if (!name || !date || !description || !categories || !imageUrl || !createdBy) {
-      return res.status(400).json({ message: "Missing required fields (including createdBy)." });
+    if (!name || !date || !description || !categories || !imageUrl || price == null || !createdBy) {
+      return res.status(400).json({ message: "Missing required fields (including price and createdBy)." });
     }
 
     const validDate = /^(\d{4})-(\d{2})-(\d{2})$/.test(date);
@@ -46,6 +47,7 @@ module.exports = async function handler(req, res) {
       categories,
       imageUrl,
       location: latitude && longitude ? { latitude, longitude } : null,
+      price: parseFloat(price),
       createdBy: createdBy || null,
       createdAt: Timestamp.now(),
     });
