@@ -34,7 +34,7 @@ const Auth = () => {
 
       const data = await response.json();
       if (response.ok) {
-        console.log('Logged in!', data);
+
         setEmail('');
         setPassword('');
         setName('');
@@ -66,7 +66,7 @@ const Auth = () => {
 
       const data = await response.json();
       if (response.ok) {
-        console.log('Logged in with Google!', data);
+
         navigate('/'); // Navigate to the home page after successful login
       } else {
         throw new Error(data.message || 'Google Sign-in failed');

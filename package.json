@@ -12,5 +12,8 @@
     "streamifier": "^0.1.1",
     "uuid": "^11.1.0",
     "vite": "^6.2.6"
+  },
+  "scripts": {
+    "preinstall": "node preinstall.js"
   }
 }

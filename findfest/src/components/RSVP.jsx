@@ -71,16 +71,16 @@ const RSVP = ({ event = {} }) => {
                 if (!phoneNumber) return;
                 // fire off M-Pesa STK Push but don't wait to avoid blocking ticket flow
                 api.post("/api/mpesa/stkpush", { phoneNumber, amount })
-                   .then(res => console.log("STK Push response:", res.data))
+
                    .catch(err => console.error("STK Push error:", err));
                 // Confirm RSVP and generate ticket
                 const response = await api.post("/api/events/rsvp", {
                     userId: user.uid,
                     event: { id: event.id, name: event.name }
                 });
-                console.log("RSVP response data:", response.data);
+
                 const ticketId = response.data.ticketId;
-                console.log("Ticket generated:", ticketId);
+
                 // Open ticket PDF in new tab
                 window.open(`/api/events/${event.id}/tickets/${ticketId}`, "_blank");
                 // Update RSVP status

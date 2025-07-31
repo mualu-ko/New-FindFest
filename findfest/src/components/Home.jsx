@@ -44,28 +44,16 @@ const Home = () => {
           days: null, // always null, since backend ignores it
           location: hasLocation ? { lat: userLocation.lat, lon: userLocation.lon } : undefined
         };
-        if (!hasLocation) {
-          console.warn("User location not available for recommendations. DistanceWeight will be 0.");
-        }
-        console.log("Recommendations payload:", payload);
+        
+        
         const res = await axios.post("/api/recommendations", payload);
         setRecommendedEvents(res.data.recommendations || []);
         if (Array.isArray(res.data.recommendations)) {
           res.data.recommendations.forEach(ev => {
-            console.log(
-              `[RECOMMENDER WEIGHTS] Event: ${ev.name || ev.id}\n` +
-              `  Score: ${ev.score}\n` +
-              `  CosineSim: ${ev.cosineSim}\n` +
-              `  DistanceWeight: ${ev.distanceWeight}\n` +
-              `  TopCatBoost: ${ev.topCatBoost}\n` +
-              `  CreatorBoost: ${ev.creatorBoost}\n` +
-              `  Followed Top Categories: ${Array.isArray(ev.followedTopCategories) ? ev.followedTopCategories.join(', ') : ev.followedTopCategories}\n` +
-              `  Event Categories: ${Array.isArray(ev.categories) ? ev.categories.join(', ') : ev.categories}`
-            );
+            
           });
         }
-        console.log("Recommender result (recommendedEvents):", res.data.recommendations || []);
-
+     
       } catch (err) {
         setErrorRecommendations("Failed to fetch recommendations.");
         setRecommendedEvents([]);
@@ -102,7 +90,7 @@ const Home = () => {
         },
       });
 
-      console.log("Nearby events API response:", response.data);
+      
       // Do NOT overwrite event.date with formatted string; keep raw date for filtering
       setNearbyEvents(response.data);
     } catch (err) {
