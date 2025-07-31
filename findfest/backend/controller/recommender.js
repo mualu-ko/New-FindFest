@@ -160,6 +160,8 @@ exports.getRecommendations = async (req, res) => {
 
       // 5. Final score
       const score = α * cosineSim + β * distanceWeight + γ1 * topCatBoost + γ2 * creatorBoost;
+      // Log the assigned score for each event
+      console.log(`[RECOMMENDER] Event: ${event.id || event.name || 'unknown'}, Score assigned:`, score);
       return { ...event, score, cosineSim, distanceWeight, topCatBoost, creatorBoost, followedTopCategories: Array.from(followedTopCategories), categories: event.categories };
     });
 

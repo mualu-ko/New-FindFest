@@ -48,7 +48,7 @@ const MyAccount = () => {
           location: data.location || { venue: "", latitude: "", longitude: "" },
           isAdmin: data.isAdmin ?? false,
         });
-        console.log("[MyAccount] user.isAdmin:", data.isAdmin);
+
       } catch (err) {
         setError("Failed to fetch user profile.");
         console.error(err);
@@ -93,7 +93,7 @@ const MyAccount = () => {
       longitude: newLocation.longitude,
     };
 
-    console.log("Updating location with the following data:", locationData);
+
 
     handleProfileUpdate({ location: locationData });
   };

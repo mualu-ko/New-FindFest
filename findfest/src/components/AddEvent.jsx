@@ -131,7 +131,7 @@ const AddEvent = () => {
             // Always set createdBy to currentUser.uid at submit time
             const dataToSend = { ...eventData, createdBy: currentUser?.uid };
             const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/events`, dataToSend);
-            console.log("Event Data Submitted:", response.data);
+
             alert("🎉 Event added successfully!");
             setIsSuccess(true); // Show success screen
 
